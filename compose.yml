@@ -1,0 +1,3 @@
+name: node-red-slack
+include:
+  - local/docker-compose.yml

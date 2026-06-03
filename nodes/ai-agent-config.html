@@ -1,0 +1,54 @@
+<script type="text/javascript">
+  RED.nodes.registerType("ai-agent-config", {
+    category: "config",
+    defaults: {
+      name: { value: "" }
+    },
+    credentials: {
+      openaiApiKey: { type: "password" },
+      googleApiKey: { type: "password" },
+      awsAccessKeyId: { type: "text" },
+      awsSecretAccessKey: { type: "password" },
+      awsSessionToken: { type: "password" }
+    },
+    label: function () {
+      return this.name || "ai-agent-config";
+    }
+  });
+</script>
+
+<script type="text/html" data-template-name="ai-agent-config">
+  <div class="form-row">
+    <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-config-input-name" placeholder="AI Agent Config" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-openaiApiKey"><i class="fa fa-key"></i> OpenAI API Key</label>
+    <input type="password" id="node-config-input-openaiApiKey" placeholder="sk-..." />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-googleApiKey"><i class="fa fa-key"></i> Google API Key</label>
+    <input type="password" id="node-config-input-googleApiKey" placeholder="AIza..." />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-awsAccessKeyId"><i class="fa fa-key"></i> AWS Access Key ID</label>
+    <input type="text" id="node-config-input-awsAccessKeyId" placeholder="AKIA..." />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-awsSecretAccessKey"><i class="fa fa-key"></i> AWS Secret Access Key</label>
+    <input type="password" id="node-config-input-awsSecretAccessKey" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-awsSessionToken"><i class="fa fa-key"></i> AWS Session Token</label>
+    <input type="password" id="node-config-input-awsSessionToken" />
+  </div>
+</script>
+
+<script type="text/html" data-help-name="ai-agent-config">
+  <p>Reusable credentials for OpenAI, Gemini and Bedrock providers.</p>
+</script>

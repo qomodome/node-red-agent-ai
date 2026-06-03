@@ -1,0 +1,93 @@
+[
+  {
+    "id": "f1a1c001",
+    "type": "tab",
+    "label": "AI Agent Basic",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "inj1",
+    "type": "inject",
+    "z": "f1a1c001",
+    "name": "Ask agent",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "payload": "Scrivi un riassunto in 3 punti su Node-RED",
+    "payloadType": "str",
+    "once": false,
+    "onceDelay": 0.1,
+    "x": 160,
+    "y": 120,
+    "wires": [["agent1"]]
+  },
+  {
+    "id": "agent1",
+    "type": "ai-agent",
+    "z": "f1a1c001",
+    "name": "AI Agent",
+    "agent": "cfg1",
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "awsRegion": "us-east-1",
+    "mcpServers": "[]",
+    "maxIterations": "8",
+    "maxToolCalls": "12",
+    "maxDurationMs": "60000",
+    "temperature": "0.2",
+    "rateLimitRetries": "2",
+    "rateLimitBackoffMs": "1000",
+    "x": 360,
+    "y": 120,
+    "wires": [["dbg1"]]
+  },
+  {
+    "id": "dbg1",
+    "type": "debug",
+    "z": "f1a1c001",
+    "name": "Result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "x": 560,
+    "y": 120,
+    "wires": []
+  },
+  {
+    "id": "catch1",
+    "type": "catch",
+    "z": "f1a1c001",
+    "name": "Catch errors",
+    "scope": ["agent1"],
+    "uncaught": false,
+    "x": 170,
+    "y": 200,
+    "wires": [["dbgErr1"]]
+  },
+  {
+    "id": "dbgErr1",
+    "type": "debug",
+    "z": "f1a1c001",
+    "name": "Errors",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": true,
+    "complete": "error",
+    "targetType": "msg",
+    "x": 380,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "cfg1",
+    "type": "ai-agent-config",
+    "name": "Default AI Credentials"
+  }
+]

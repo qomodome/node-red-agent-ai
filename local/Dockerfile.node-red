@@ -1,0 +1,17 @@
+FROM nodered/node-red:4.1.10-22
+
+USER root
+
+WORKDIR /usr/src/node-red/local-module
+
+COPY . .
+
+WORKDIR /usr/src/node-red
+COPY local/docker-entrypoint-test.sh /usr/src/node-red/docker-entrypoint-test.sh
+
+RUN chmod +x /usr/src/node-red/docker-entrypoint-test.sh \
+  && chown -R node-red:node-red /usr/src/node-red/local-module /usr/src/node-red/docker-entrypoint-test.sh
+
+USER node-red
+
+ENTRYPOINT ["/usr/src/node-red/docker-entrypoint-test.sh"]

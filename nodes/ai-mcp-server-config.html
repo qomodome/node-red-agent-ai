@@ -1,0 +1,113 @@
+<script type="text/javascript">
+  RED.nodes.registerType("ai-mcp-server-config", {
+    category: "config",
+    defaults: {
+      name: { value: "" },
+      transport: { value: "streamableHttp", required: true },
+      url: { value: "" },
+      command: { value: "" },
+      argsRaw: { value: "" },
+      envJson: { value: "{}" }
+    },
+    label: function () {
+      return this.name || "MCP Server";
+    },
+    oneditprepare: function () {
+      if (typeof console !== "undefined" && console.log) {
+        console.log("[ai-mcp-config-ui] oneditprepare", { id: this.id, name: this.name || "" });
+      }
+
+      function toggleFields() {
+        const transport = $("#node-config-input-transport").val();
+        if (transport === "stdio") {
+          $(".mcp-stdio-row").show();
+          $(".mcp-url-row").hide();
+        } else {
+          $(".mcp-stdio-row").hide();
+          $(".mcp-url-row").show();
+        }
+      }
+
+      $("#node-config-input-transport").on("change", toggleFields);
+      toggleFields();
+    },
+    oneditsave: function () {
+      const originalName = this.name;
+      if (this.name && String(this.name).trim()) return;
+
+      const transport = String($("#node-config-input-transport").val() || "streamableHttp");
+      const url = String($("#node-config-input-url").val() || "").trim();
+      const command = String($("#node-config-input-command").val() || "").trim();
+
+      if (transport === "stdio") {
+        this.name = command ? "stdio: " + command : "stdio server";
+      } else {
+        this.name = url || transport + " server";
+      }
+
+      if (typeof console !== "undefined" && console.log) {
+        console.log("[ai-mcp-config-ui] oneditsave", {
+          id: this.id,
+          originalName: originalName,
+          generatedName: this.name,
+          transport: transport,
+          url: url,
+          command: command
+        });
+      }
+    }
+  });
+</script>
+
+<script type="text/html" data-template-name="ai-mcp-server-config">
+  <div class="form-row">
+    <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-config-input-name" placeholder="e.g. my-tools" style="width:70%" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-transport"><i class="fa fa-exchange"></i> Transport</label>
+    <select id="node-config-input-transport" style="width:70%">
+      <option value="streamableHttp">Streamable HTTP (MCP 2025-03-26+)</option>
+      <option value="sse">SSE (legacy HTTP)</option>
+      <option value="stdio">stdio</option>
+    </select>
+  </div>
+
+  <div class="form-row mcp-url-row">
+    <label for="node-config-input-url"><i class="fa fa-link"></i> URL</label>
+    <input type="text" id="node-config-input-url" placeholder="http://127.0.0.1:3000/mcp" style="width:70%" />
+  </div>
+
+  <div class="form-row mcp-stdio-row" style="display:none">
+    <label for="node-config-input-command"><i class="fa fa-terminal"></i> Command</label>
+    <input type="text" id="node-config-input-command" placeholder="npx" style="width:70%" />
+  </div>
+
+  <div class="form-row mcp-stdio-row" style="display:none">
+    <label for="node-config-input-argsRaw"><i class="fa fa-list"></i> Args</label>
+    <textarea id="node-config-input-argsRaw" rows="3" style="width:70%" placeholder="One argument per line&#10;-y&#10;@my/mcp-server"></textarea>
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-envJson"><i class="fa fa-cogs"></i> Env (JSON)</label>
+    <textarea id="node-config-input-envJson" rows="3" style="width:70%" placeholder='{"API_KEY": "secret"}'></textarea>
+  </div>
+</script>
+
+<script type="text/html" data-help-name="ai-mcp-server-config">
+  <p>Configuration node for a single MCP (Model Context Protocol) server.</p>
+
+  <h3>Transports</h3>
+  <ul>
+    <li><b>Streamable HTTP</b> — MCP spec 2025-03-26+. Provide the endpoint URL.</li>
+    <li><b>SSE</b> — Legacy HTTP transport. Provide the endpoint URL.</li>
+    <li><b>stdio</b> — Local process. Provide command and optional arguments (one per line).</li>
+  </ul>
+
+  <h3>Env (JSON)</h3>
+  <p>Optional JSON object with environment variables injected into the stdio process.</p>
+
+  <h3>Usage</h3>
+  <p>Reference one or more MCP Server configs from the <em>ai-agent</em> node's <em>MCP Servers</em> list.</p>
+</script>

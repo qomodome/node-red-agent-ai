@@ -1,0 +1,16 @@
+services:
+  node-red:
+    build:
+      context: ..
+      dockerfile: local/Dockerfile.node-red
+    container_name: node-red-agent-ai-local
+    ports:
+      - "1880:1880" 
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - node_red_data:/data
+    restart: unless-stopped
+
+volumes:
+  node_red_data:

@@ -1,0 +1,365 @@
+<script type="text/javascript">
+  RED.nodes.registerType("ai-agent", {
+    category: "function",
+    color: "#a6bbcf",
+    defaults: {
+      name: { value: "" },
+      agent: { value: "", type: "ai-agent-config", required: true },
+      provider: { value: "openai", required: true },
+      model: { value: "" },
+      systemPrompt: { value: "" },
+      awsRegion: { value: "us-east-1" },
+      mcpServerIds: { value: [] },
+      mcpServerDraft: { value: "", type: "ai-mcp-server-config" },
+      debugLogs: { value: false },
+      maxIterations: { value: 8, required: true, validate: RED.validators.number() },
+      maxToolCalls: { value: 12, required: true, validate: RED.validators.number() },
+      maxDurationMs: { value: 60000, required: true, validate: RED.validators.number() },
+      temperature: { value: 0.2, required: true, validate: RED.validators.number() },
+      rateLimitRetries: { value: 2, required: true, validate: RED.validators.number() },
+      rateLimitBackoffMs: { value: 1000, required: true, validate: RED.validators.number() }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "font-awesome/fa-robot",
+    label: function () {
+      return this.name || "ai-agent";
+    },
+    oneditprepare: function () {
+      const node = this;
+      const uiLog = function () {
+        if (typeof console !== "undefined" && console.log) {
+          console.log.apply(console, ["[ai-agent-ui]"].concat(Array.from(arguments)));
+        }
+      };
+
+      uiLog("oneditprepare", { id: node.id, mcpServerIds: node.mcpServerIds || [] });
+
+      function syncAwsRegionVisibility() {
+        const provider = String($("#node-input-provider").val() || "").toLowerCase();
+        const isBedrock = provider === "bedrock";
+        $("#node-input-awsRegion").closest(".form-row").toggle(isBedrock);
+      }
+
+      $("#node-input-provider").on("change", syncAwsRegionVisibility);
+      syncAwsRegionVisibility();
+
+      // Keep the draft field technical-only: needed for native config create/edit buttons.
+      $("#node-input-mcpServerDraft").closest(".form-row").hide();
+
+      function populateSelect($select, selectedId) {
+        const prev = $select.val() || selectedId;
+        $select.empty();
+        $select.append($('<option value="">').text("-- select MCP server --"));
+        RED.nodes.eachConfig(function (n) {
+          if (n.type === "ai-mcp-server-config") {
+            const opt = $('<option>').val(n.id).text(n.name || n.id);
+            if (n.id === prev) opt.attr("selected", true);
+            $select.append(opt);
+          }
+        });
+      }
+
+      function refreshAllSelects() {
+        let itemCount = 0;
+        $("#node-input-mcpServerIds-list").editableList("items").each(function () {
+          itemCount += 1;
+          populateSelect($(this).find("select"));
+        });
+        uiLog("refreshAllSelects", { rows: itemCount });
+      }
+
+      function findDraftButtons() {
+        const buckets = [];
+        const pushUnique = function ($set) {
+          $set.each(function () {
+            if (!buckets.includes(this)) buckets.push(this);
+          });
+        };
+
+        // Common Node-RED ids/classes across versions/themes
+        pushUnique($("#node-input-lookup-mcpServerDraft"));
+        pushUnique($("#node-input-edit-mcpServerDraft"));
+        pushUnique($("#node-input-mcpServerDraft").siblings("a"));
+
+        // Broad fallback: any button element tied to this property id
+        pushUnique($("a[id*='mcpServerDraft']"));
+        pushUnique($("button[id*='mcpServerDraft']"));
+
+        const $buttons = $(buckets);
+        uiLog("findDraftButtons", {
+          count: $buttons.length,
+          ids: $buttons
+            .map(function () {
+              return $(this).attr("id") || "(no-id)";
+            })
+            .get()
+        });
+
+        return $buttons;
+      }
+
+      function clickDraftButton(kind) {
+        const $buttons = findDraftButtons();
+        let clicked = false;
+
+        $buttons.each(function () {
+          const $btn = $(this);
+          const id = String($btn.attr("id") || "").toLowerCase();
+          const title = String($btn.attr("title") || "").toLowerCase();
+          const hasPlus = $btn.find("i.fa-plus").length > 0;
+          const hasPencil = $btn.find("i.fa-pencil").length > 0;
+          const text = String($btn.text() || "").toLowerCase();
+
+          const isCreateLike =
+            hasPlus ||
+            id.includes("add") ||
+            id.includes("create") ||
+            title.includes("add") ||
+            title.includes("create") ||
+            title.includes("new") ||
+            text.includes("add") ||
+            text.includes("new");
+
+          const isEditLike =
+            hasPencil ||
+            id.includes("edit") ||
+            title.includes("edit") ||
+            text.includes("edit");
+
+          if (kind === "create" && isCreateLike) {
+            $btn.trigger("click");
+            clicked = true;
+            return false;
+          }
+
+          if (kind === "edit" && isEditLike) {
+            $btn.trigger("click");
+            clicked = true;
+            return false;
+          }
+        });
+
+        if (!clicked && kind === "create" && $buttons.length > 0) {
+          $buttons.first().trigger("click");
+          clicked = true;
+        }
+
+        if (!clicked && kind === "edit" && $buttons.length > 1) {
+          $buttons.last().trigger("click");
+          clicked = true;
+        }
+
+        if (!clicked && typeof RED.notify === "function") {
+          RED.notify("Cannot find native config create/edit button for MCP draft field", "warning");
+          RED.sidebar.show("config");
+        }
+
+        return clicked;
+      }
+
+      function addServerIdToList(serverId) {
+        const id = String(serverId || "").trim();
+        if (!id) return;
+
+        let duplicate = false;
+        $("#node-input-mcpServerIds-list").editableList("items").each(function () {
+          if ($(this).find("select").val() === id) duplicate = true;
+        });
+
+        if (duplicate) return;
+
+        $("#node-input-mcpServerIds-list").editableList("addItem", { id: id });
+        refreshAllSelects();
+        uiLog("added MCP config to list", { id: id });
+      }
+
+      $("#node-input-mcpServerIds-list").editableList({
+        addItem: function (container, _, data) {
+          const row = $('<div style="display:flex;align-items:center;gap:4px;width:100%"></div>');
+          const $select = $('<select style="flex:1"></select>');
+          populateSelect($select, data && data.id);
+
+          const editBtn = $('<a class="editor-button editor-button-small" title="Edit this MCP server"><i class="fa fa-pencil"></i></a>');
+          editBtn.on("click", function () {
+            const id = $select.val();
+            if (!id) return;
+            $("#node-input-mcpServerDraft").val(id).trigger("change");
+            clickDraftButton("edit");
+          });
+
+          row.append($('<i class="fa fa-server" style="color:#aaa"></i>'));
+          row.append($select);
+          row.append(editBtn);
+          container.append(row);
+        },
+        removable: true,
+        sortable: true
+      });
+
+      (node.mcpServerIds || []).forEach(function (id) {
+        $("#node-input-mcpServerIds-list").editableList("addItem", { id: id });
+      });
+
+      // "New MCP server config" button — creates a config node and adds a row for it
+      $("#node-input-mcpServer-addnew").on("click", function (e) {
+        e.preventDefault();
+        uiLog("clicked New MCP server config");
+
+        const hasEventBus = RED.events && typeof RED.events.once === "function";
+        if (hasEventBus) {
+          RED.events.once("nodes:add", function (n) {
+            if (n && n.type === "ai-mcp-server-config") {
+              $("#node-input-mcpServerDraft").val(n.id).trigger("change");
+              addServerIdToList(n.id);
+            }
+          });
+        }
+
+        const opened = clickDraftButton("create");
+        if (!opened && typeof RED.notify === "function") {
+          RED.notify("Unable to open MCP config creation dialog from this panel", "warning");
+        }
+      });
+
+      $("#node-input-mcpServer-refresh").on("click", function (e) {
+        e.preventDefault();
+        uiLog("clicked Refresh MCP list");
+        refreshAllSelects();
+      });
+    },
+    oneditsave: function () {
+      const ids = [];
+      $("#node-input-mcpServerIds-list").editableList("items").each(function () {
+        const val = $(this).find("select").val();
+        if (val) ids.push(val);
+      });
+      this.mcpServerIds = ids;
+      this.mcpServerDraft = "";
+      if (typeof console !== "undefined" && console.log) {
+        console.log("[ai-agent-ui] oneditsave", { mcpServerIds: ids });
+      }
+    }
+  });
+</script>
+
+<script type="text/html" data-template-name="ai-agent">
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="AI Agent" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-agent"><i class="fa fa-cog"></i> Agent Config</label>
+    <input type="text" id="node-input-agent" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-provider"><i class="fa fa-plug"></i> Provider</label>
+    <select id="node-input-provider">
+      <option value="openai">OpenAI GPT</option>
+      <option value="gemini">Google Gemini</option>
+      <option value="bedrock">AWS Bedrock</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-model"><i class="fa fa-cube"></i> Model</label>
+    <input type="text" id="node-input-model" placeholder="Optional override" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-systemPrompt"><i class="fa fa-comment"></i> System Prompt</label>
+    <textarea id="node-input-systemPrompt" rows="3" placeholder="Optional system instructions for the agent"></textarea>
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-awsRegion"><i class="fa fa-globe"></i> AWS Region</label>
+    <input type="text" id="node-input-awsRegion" placeholder="us-east-1" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-debugLogs"><i class="fa fa-bug"></i> Debug Logs</label>
+    <input type="checkbox" id="node-input-debugLogs" style="width:auto;vertical-align:middle" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-mcpServerDraft"><i class="fa fa-plus-square"></i> MCP Draft</label>
+    <input type="text" id="node-input-mcpServerDraft" />
+  </div>
+
+  <div class="form-row">
+    <label><i class="fa fa-wrench"></i> MCP Servers</label>
+    <ol id="node-input-mcpServerIds-list" style="margin-left:0"></ol>
+    <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
+      <a id="node-input-mcpServer-addnew" class="editor-button editor-button-small" href="#">
+        <i class="fa fa-plus"></i> New MCP server config
+      </a>
+      <a id="node-input-mcpServer-refresh" class="editor-button editor-button-small" href="#">
+        <i class="fa fa-refresh"></i> Refresh MCP list
+      </a>
+      <span style="font-size:11px;color:#888">Create new MCP config directly from here, then refresh if needed.</span>
+    </div>
+  </div>
+
+  <details class="form-row" style="margin-top:10px;">
+    <summary style="cursor:pointer;font-weight:600;">
+      <i class="fa fa-sliders"></i> Advanced Settings
+    </summary>
+
+    <div class="form-row" style="margin-top:10px;">
+      <label for="node-input-maxIterations"><i class="fa fa-repeat"></i> Max Iterations</label>
+      <input type="number" id="node-input-maxIterations" min="1" />
+    </div>
+
+    <div class="form-row">
+      <label for="node-input-maxToolCalls"><i class="fa fa-wrench"></i> Max Tool Calls</label>
+      <input type="number" id="node-input-maxToolCalls" min="1" />
+    </div>
+
+    <div class="form-row">
+      <label for="node-input-maxDurationMs"><i class="fa fa-clock-o"></i> Max Duration (ms)</label>
+      <input type="number" id="node-input-maxDurationMs" min="1000" />
+    </div>
+
+    <div class="form-row">
+      <label for="node-input-temperature"><i class="fa fa-sliders"></i> Temperature</label>
+      <input type="number" id="node-input-temperature" step="0.1" min="0" max="2" />
+    </div>
+
+    <div class="form-row">
+      <label for="node-input-rateLimitRetries"><i class="fa fa-refresh"></i> Rate-limit Retries</label>
+      <input type="number" id="node-input-rateLimitRetries" min="0" />
+    </div>
+
+    <div class="form-row" style="margin-bottom:0;">
+      <label for="node-input-rateLimitBackoffMs"><i class="fa fa-hourglass"></i> Retry Backoff (ms)</label>
+      <input type="number" id="node-input-rateLimitBackoffMs" min="0" />
+    </div>
+  </details>
+</script>
+
+<script type="text/html" data-help-name="ai-agent">
+  <p>Agent node with LangChain.js model calls and MCP tool usage.</p>
+
+  <p>Input contract:</p>
+  <pre>msg.payload = "User request"
+// or
+msg.payload = { input: "User request" }</pre>
+
+  <p>Optional runtime overrides:</p>
+  <pre>msg.ai = {
+  provider: "openai|gemini|bedrock",
+  model: "model-id",
+  systemPrompt: "custom system instructions",
+  mcpServers: [
+    { name: "local", transport: "streamableHttp", url: "http://127.0.0.1:3000/mcp" }
+  ]
+}</pre>
+
+  <p>Error handling:</p>
+  <ul>
+    <li>Errors are propagated to standard Node-RED catch node</li>
+    <li>Only rate-limit backoff is handled internally</li>
+  </ul>
+</script>

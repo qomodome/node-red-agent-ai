@@ -1,0 +1,36 @@
+{
+  "name": "node-red-contrib-ai-agent-mcp",
+  "version": "0.1.0",
+  "description": "Node-RED custom AI agent node with LangChain.js and MCP client tools",
+  "keywords": [
+    "node-red",
+    "node-red-contrib",
+    "ai",
+    "agent",
+    "mcp",
+    "langchain"
+  ],
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "nodes/ai-agent.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "pack": "npm pack"
+  },
+  "dependencies": {
+    "@langchain/aws": "^0.1.0",
+    "@langchain/google-genai": "^0.1.0",
+    "@langchain/openai": "^0.4.0",
+    "@modelcontextprotocol/sdk": "^1.17.0"
+  },
+  "node-red": {
+    "nodes": {
+      "ai-agent-config": "nodes/ai-agent-config.js",
+      "ai-mcp-server-config": "nodes/ai-mcp-server-config.js",
+      "ai-agent": "nodes/ai-agent.js"
+    }
+  }
+}

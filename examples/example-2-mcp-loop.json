@@ -1,0 +1,98 @@
+[
+  {
+    "id": "f2b2c002",
+    "type": "tab",
+    "label": "AI Agent MCP",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "inj2",
+    "type": "inject",
+    "z": "f2b2c002",
+    "name": "Ask with MCP",
+    "props": [
+      {
+        "p": "payload"
+      },
+      {
+        "p": "ai",
+        "v": "{\"provider\":\"openai\",\"model\":\"gpt-4o-mini\",\"mcpServers\":[{\"name\":\"local\",\"transport\":\"streamableHttp\",\"url\":\"http://127.0.0.1:3000/mcp\"}]}",
+        "vt": "json"
+      }
+    ],
+    "payload": "Usa gli strumenti disponibili per rispondere in modo verificabile",
+    "payloadType": "str",
+    "once": false,
+    "onceDelay": 0.1,
+    "x": 180,
+    "y": 120,
+    "wires": [["agent2"]]
+  },
+  {
+    "id": "agent2",
+    "type": "ai-agent",
+    "z": "f2b2c002",
+    "name": "AI Agent + MCP",
+    "agent": "cfg2",
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "awsRegion": "us-east-1",
+    "mcpServers": "[]",
+    "maxIterations": "10",
+    "maxToolCalls": "16",
+    "maxDurationMs": "90000",
+    "temperature": "0.2",
+    "rateLimitRetries": "2",
+    "rateLimitBackoffMs": "1000",
+    "x": 410,
+    "y": 120,
+    "wires": [["dbg2"]]
+  },
+  {
+    "id": "dbg2",
+    "type": "debug",
+    "z": "f2b2c002",
+    "name": "Result + trace",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "true",
+    "targetType": "full",
+    "x": 640,
+    "y": 120,
+    "wires": []
+  },
+  {
+    "id": "catch2",
+    "type": "catch",
+    "z": "f2b2c002",
+    "name": "Catch errors",
+    "scope": ["agent2"],
+    "uncaught": false,
+    "x": 190,
+    "y": 200,
+    "wires": [["dbgErr2"]]
+  },
+  {
+    "id": "dbgErr2",
+    "type": "debug",
+    "z": "f2b2c002",
+    "name": "Errors",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": true,
+    "complete": "error",
+    "targetType": "msg",
+    "x": 390,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "cfg2",
+    "type": "ai-agent-config",
+    "name": "Default AI Credentials"
+  }
+]
