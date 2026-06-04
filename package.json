@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Node-RED nodes for AI agent with LLM calling and MCPs support",
   "keywords": [
     "node-red",
