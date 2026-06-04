@@ -9,7 +9,7 @@ async function createLangChainModel(provider, modelName, temperature, secrets, r
 
     return new ChatOpenAI({
       apiKey: secrets.openaiApiKey,
-      model: modelName || "gpt-4o-mini",
+      model: modelName || "gpt-5.4-mini",
       temperature
     });
   }
@@ -22,27 +22,35 @@ async function createLangChainModel(provider, modelName, temperature, secrets, r
 
     return new ChatGoogleGenerativeAI({
       apiKey: secrets.googleApiKey,
-      model: modelName || "gemini-1.5-flash",
+      model: modelName || "gemini-3.5-flash",
       temperature
     });
   }
 
   if (providerKey === "bedrock" || providerKey === "aws") {
     const { ChatBedrockConverse } = await import("@langchain/aws");
-    if (!secrets.awsAccessKeyId || !secrets.awsSecretAccessKey) {
-      throw new Error("Missing AWS credentials in ai-agent-config");
+    const hasAccessKeyId = Boolean(secrets.awsAccessKeyId);
+    const hasSecretAccessKey = Boolean(secrets.awsSecretAccessKey);
+
+    if (hasAccessKeyId !== hasSecretAccessKey) {
+      throw new Error("Provide both AWS Access Key ID and Secret Access Key, or leave both empty to use IAM role credentials");
     }
 
-    return new ChatBedrockConverse({
-      model: modelName || "anthropic.claude-3-5-sonnet-20240620-v1:0",
+    const bedrockOptions = {
+      model: modelName || "anthropic.claude-opus-4-8",
       region: region || "us-east-1",
-      credentials: {
+      temperature
+    };
+
+    if (hasAccessKeyId && hasSecretAccessKey) {
+      bedrockOptions.credentials = {
         accessKeyId: secrets.awsAccessKeyId,
         secretAccessKey: secrets.awsSecretAccessKey,
         sessionToken: secrets.awsSessionToken || undefined
-      },
-      temperature
-    });
+      };
+    }
+
+    return new ChatBedrockConverse(bedrockOptions);
   }
 
   throw new Error("Unsupported provider: " + providerKey);
