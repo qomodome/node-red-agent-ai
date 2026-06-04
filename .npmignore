@@ -17,3 +17,4 @@ compose.yml
 
 # Keep package output clean
 *.tgz
+.githooks
