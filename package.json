@@ -31,5 +31,8 @@
       "ai-mcp-server-config": "nodes/ai-mcp-server-config.js",
       "ai-agent": "nodes/ai-agent.js"
     }
+  },
+  "scripts": {
+    "test": "node --test"
   }
 }
