@@ -33,11 +33,73 @@ nodes/
 - Node.js 18+
 - Node-RED 3+
 
-## Install
+## Installation
+
+From the Node-RED editor:
+
+1. Go to `Manage palette` > `Install` tab
+2. Search for `@qomodome/node-red-agent-ai`
+3. Click `Install`
+
+From the command line:
 
 ```bash
-npm install node-red-contrib-ai-agent-mcp
+npm install @qomodome/node-red-agent-ai
 ```
+
+## Use the node
+
+1. Add an `ai-agent-config` node and set credentials for the provider you want to use.
+2. (Optional) Add one or more `ai-mcp-server-config` nodes if you want external tools.
+3. Add an `ai-agent` node and link it to your `ai-agent-config`.
+4. Pick provider/model in the node UI (or override from `msg.ai`).
+5. Send a message like this:
+
+```js
+msg.payload = {
+  input: "Summarize today tickets in 5 bullet points"
+};
+
+msg.ai = {
+  provider: "gemini", // openai | gemini | bedrock
+  model: "gemini-3.5-flash"
+};
+
+return msg;
+```
+
+If `msg.ai` is missing, `ai-agent` uses the defaults configured in the node editor.
+
+## Node reference
+
+### ai-agent-config
+
+- `name` (optional): label in editor
+- `openaiApiKey` (optional): used when provider is `openai`
+- `googleApiKey` (optional): used when provider is `gemini`
+- `awsAccessKeyId` (optional): AWS key id for `bedrock`
+- `awsSecretAccessKey` (optional): AWS secret for `bedrock`
+- `awsSessionToken` (optional): AWS session token when needed
+
+### ai-mcp-server-config
+
+- `name` (optional): label in editor
+- `transport` (required): `streamableHttp` | `sse` | `stdio`
+- `url` (required for HTTP transports): MCP endpoint URL
+- `command` (required for `stdio`): executable to spawn
+- `argsRaw` (optional): one argument per line for `stdio`
+- `envJson` (optional): JSON object with env vars for `stdio`
+
+### ai-agent
+
+- `agent` (required): reference to `ai-agent-config`
+- `provider` (required): `openai` | `gemini` | `bedrock`
+- `model` (optional): provider model override
+- `systemPrompt` (optional): persistent agent instruction
+- `awsRegion` (optional): used for `bedrock` (default `us-east-1`)
+- `mcpServerIds` (optional): linked `ai-mcp-server-config` nodes
+- `debugLogs` (optional): verbose runtime logs
+- advanced limits (optional): `maxIterations`, `maxToolCalls`, `maxDurationMs`, `temperature`, `rateLimitRetries`, `rateLimitBackoffMs`
 
 ## Message contract
 
