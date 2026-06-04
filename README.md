@@ -1,4 +1,4 @@
-# node-red-ai-agent-mcp
+# node-red-agent-ai
 
 Drop an AI agent into any Node-RED flow — it runs a reasoning loop, calls MCP tools, and returns the final answer.
 
