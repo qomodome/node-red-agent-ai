@@ -1,12 +1,12 @@
 # node-red-contrib-ai-agent-mcp
 
-Node-RED custom nodes to run an AI agent with LangChain.js and MCP tools.
+Drop an AI agent into any Node-RED flow — it runs a reasoning loop, calls MCP tools, and returns the final answer.
 
 ## What you get
 
 - `ai-agent-config`: stores provider credentials and shared defaults
 - `ai-agent`: executes a reasoning loop, can call MCP tools, then returns final output
-- Provider support target: OpenAI GPT, Google Gemini, AWS Bedrock
+- Provider support: **OpenAI GPT**, **Google Gemini**, **AWS Bedrock**
 
 ## Architecture
 
@@ -45,7 +45,7 @@ Input:
 
 - `msg.payload` string or object with `input`
 - optional overrides in `msg.ai`:
-  - `provider`: `openai | gemini | bedrock`
+  - `provider`: `openai` · `gemini` · `bedrock`
   - `model`: model id/name
   - `mcpServers`: array of MCP server configs
 
