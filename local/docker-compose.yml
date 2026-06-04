@@ -8,6 +8,8 @@ services:
       - "1880:1880" 
     environment:
       - TZ=Europe/Rome
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - node_red_data:/data
     restart: unless-stopped

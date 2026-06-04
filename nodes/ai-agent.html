@@ -340,14 +340,53 @@
 </script>
 
 <script type="text/html" data-help-name="ai-agent">
-  <p>Agent node with LangChain.js model calls and MCP tool usage.</p>
+  <p>
+    The <b>ai-agent</b> node is a general-purpose AI assistant for Node-RED.
+    You send it a user request, and it returns a final answer.
+  </p>
 
-  <p>Input contract:</p>
+  <h3>What This Node Does</h3>
+  <ul>
+    <li>Understands natural-language requests from your flow</li>
+    <li>Uses your selected model provider (OpenAI, Gemini, or Bedrock)</li>
+    <li>Can use MCP tools when needed to fetch live data or perform actions</li>
+    <li>Combines tool results into a final response for your flow</li>
+  </ul>
+
+  <h3>Typical Use Cases</h3>
+  <ul>
+    <li>Chat or assistant experiences inside Node-RED automations</li>
+    <li>Business Q and A over internal tools exposed through MCP</li>
+    <li>Enriched responses that require both reasoning and external data</li>
+    <li>Automation steps where a model decides what information to retrieve</li>
+  </ul>
+
+  <h3>How To Use In A Flow</h3>
+  <ol>
+    <li>Create an <b>Agent Config</b> with your provider credentials</li>
+    <li>Select provider and optional model override in this node</li>
+    <li>Optionally attach one or more MCP Server configs</li>
+    <li>Send a user request in <code>msg.payload</code></li>
+    <li>Read the generated answer from the output <code>msg.payload</code></li>
+  </ol>
+
+  <h3>Input</h3>
+  <p>You can pass the user request in one of these formats:</p>
   <pre>msg.payload = "User request"
 // or
 msg.payload = { input: "User request" }</pre>
 
-  <p>Optional runtime overrides:</p>
+  <h3>Output</h3>
+  <ul>
+    <li><code>msg.payload</code>: final assistant response</li>
+    <li><code>msg.aiAgent</code>: metadata such as provider, model, and trace</li>
+  </ul>
+
+  <h3>Optional Runtime Overrides</h3>
+  <p>
+    You can override provider, model, system prompt, and MCP servers at runtime through
+    <code>msg.ai</code>.
+  </p>
   <pre>msg.ai = {
   provider: "openai|gemini|bedrock",
   model: "model-id",
@@ -357,9 +396,9 @@ msg.payload = { input: "User request" }</pre>
   ]
 }</pre>
 
-  <p>Error handling:</p>
+  <h3>Error Behavior</h3>
   <ul>
-    <li>Errors are propagated to standard Node-RED catch node</li>
-    <li>Only rate-limit backoff is handled internally</li>
+    <li>Errors are emitted to standard Node-RED catch nodes</li>
+    <li>Rate-limit retries are handled automatically based on node settings</li>
   </ul>
 </script>

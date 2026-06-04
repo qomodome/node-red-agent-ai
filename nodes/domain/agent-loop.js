@@ -42,6 +42,7 @@ function extractJsonObject(text) {
         try {
           return JSON.parse(candidate);
         } catch {
+            console.warn("Failed to parse JSON candidate from model response:", candidate);
           // Keep scanning.
         }
       }
