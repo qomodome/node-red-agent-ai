@@ -93,12 +93,6 @@ Run tests:
 npm test
 ```
 
-Create package tarball:
-
-```bash
-npm pack
-```
-
 ## Publishing
 
 The publish process is automated via GitHub Actions when pushing a tag that matches the `package.json` version. To publish a new version:
