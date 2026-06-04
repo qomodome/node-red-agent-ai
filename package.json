@@ -1,6 +1,6 @@
 {
   "name": "@qomodome/node-red-agent-ai",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Node-RED nodes for AI agent with LLM calling and MCPs support",
   "keywords": [
     "node-red",
