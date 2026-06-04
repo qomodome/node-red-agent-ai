@@ -35,6 +35,11 @@
       "ai-agent": "nodes/ai-agent.js"
     }
   },
+  "files": [
+    "nodes",
+    "examples",
+    "README.md"
+  ],
   "scripts": {
     "test": "node --test"
   }
