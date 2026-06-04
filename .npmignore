@@ -1,0 +1,19 @@
+# Development and tooling
+.git/
+.gitignore
+node_modules/
+
+# Local/dev artifacts
+.DS_Store
+.env
+.env.*
+*.log
+npm-debug.log*
+
+# Test and local infrastructure
+test/
+local/
+compose.yml
+
+# Keep package output clean
+*.tgz
