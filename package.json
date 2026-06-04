@@ -1,5 +1,8 @@
 {
   "name": "@qomodome/node-red-agent-ai",
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.1.3",
   "description": "Node-RED nodes for AI agent with LLM calling and MCPs support",
   "keywords": [
