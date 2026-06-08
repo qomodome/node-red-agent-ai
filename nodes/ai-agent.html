@@ -25,7 +25,7 @@
     },
     inputs: 1,
     outputs: 1,
-    icon: "font-awesome/fa-robot",
+    icon: "font-awesome/fa-magic",
     label: function () {
       return this.name || "ai-agent";
     },
@@ -246,6 +246,21 @@
     }
   });
 </script>
+
+<style type="text/css">
+  /* Make ai-agent's FA icon more legible without affecting other node types. */
+  .red-ui-palette-node[data-palette-type="ai-agent"] .fa.fa-magic,
+  .palette_node[data-palette-type="ai-agent"] .fa.fa-magic,
+  .red-ui-flow-node[data-type="ai-agent"] .fa.fa-magic {
+    font-size: 19px !important;
+    line-height: 1 !important;
+  }
+
+  .red-ui-flow-node[data-type="ai-agent"] .fa.fa-magic {
+    transform: scale(1.12);
+    transform-origin: center;
+  }
+</style>
 
 <script type="text/html" data-template-name="ai-agent">
   <div class="form-row">
