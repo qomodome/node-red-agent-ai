@@ -29,6 +29,7 @@
     "@modelcontextprotocol/sdk": "^1.29.0"
   },
   "node-red": {
+    "version": ">=3.0.0",
     "nodes": {
       "ai-agent-config": "nodes/ai-agent-config.js",
       "ai-mcp-server-config": "nodes/ai-mcp-server-config.js",
