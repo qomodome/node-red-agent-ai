@@ -10,7 +10,13 @@
       systemPrompt: { value: "" },
       awsRegion: { value: "us-east-1" },
       mcpServerIds: { value: [] },
-      mcpServerDraft: { value: "", type: "ai-mcp-server-config" },
+      mcpServerDraft: {
+        value: "",
+        type: "ai-mcp-server-config",
+        validate: function (value) {
+          return !value || value.trim() === "" || !!RED.nodes.node(value) || !!RED.nodes.config(value);
+        }
+      },
       debugLogs: { value: false },
       maxIterations: { value: 8, required: true, validate: RED.validators.number() },
       maxToolCalls: { value: 12, required: true, validate: RED.validators.number() },
