@@ -1,4 +1,4 @@
-async function createLangChainModel(provider, modelName, temperature, secrets, region) {
+async function createLangChainModel(provider, modelName, secrets, region) {
   const providerKey = String(provider || "openai").trim().toLowerCase();
 
   if (providerKey === "openai" || providerKey === "gpt") {
@@ -9,8 +9,7 @@ async function createLangChainModel(provider, modelName, temperature, secrets, r
 
     return new ChatOpenAI({
       apiKey: secrets.openaiApiKey,
-      model: modelName || "gpt-5.4-mini",
-      temperature
+      model: modelName || "gpt-5.4-mini"
     });
   }
 
@@ -22,8 +21,7 @@ async function createLangChainModel(provider, modelName, temperature, secrets, r
 
     return new ChatGoogleGenerativeAI({
       apiKey: secrets.googleApiKey,
-      model: modelName || "gemini-3.5-flash",
-      temperature
+      model: modelName || "gemini-3.5-flash"
     });
   }
 
@@ -38,8 +36,7 @@ async function createLangChainModel(provider, modelName, temperature, secrets, r
 
     const bedrockOptions = {
       model: modelName || "anthropic.claude-opus-4-8",
-      region: region || "us-east-1",
-      temperature
+      region: region || "us-east-1"
     };
 
     if (hasAccessKeyId && hasSecretAccessKey) {

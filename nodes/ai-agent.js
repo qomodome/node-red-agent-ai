@@ -1,5 +1,4 @@
 const {
-  DEFAULT_MAX_DURATION_MS,
   DEFAULT_MAX_ITERATIONS,
   DEFAULT_MAX_TOOL_CALLS
 } = require("./domain/agent-constants");
@@ -21,8 +20,6 @@ module.exports = function (RED) {
     node.mcpServerIds = Array.isArray(config.mcpServerIds) ? config.mcpServerIds : [];
     node.maxIterations = Number(config.maxIterations || DEFAULT_MAX_ITERATIONS);
     node.maxToolCalls = Number(config.maxToolCalls || DEFAULT_MAX_TOOL_CALLS);
-    node.maxDurationMs = Number(config.maxDurationMs || DEFAULT_MAX_DURATION_MS);
-    node.temperature = Number(config.temperature || 0.2);
     node.rateLimitRetries = Number(config.rateLimitRetries || 2);
     node.rateLimitBackoffMs = Number(config.rateLimitBackoffMs || 1000);
     node.awsRegion = (config.awsRegion || "us-east-1").trim();
@@ -78,7 +75,6 @@ module.exports = function (RED) {
         const model = await createLangChainModel(
           provider,
           modelName,
-          node.temperature,
           secrets,
           node.awsRegion
         );
@@ -98,7 +94,6 @@ module.exports = function (RED) {
           systemPrompt,
           maxIterations: node.maxIterations,
           maxToolCalls: node.maxToolCalls,
-          maxDurationMs: node.maxDurationMs,
           rateLimitRetries: node.rateLimitRetries,
           rateLimitBackoffMs: node.rateLimitBackoffMs,
           onRateLimitRetry: (attempt) => {

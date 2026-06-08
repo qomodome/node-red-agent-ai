@@ -41,8 +41,6 @@
     "mcpServers": "[]",
     "maxIterations": "10",
     "maxToolCalls": "16",
-    "maxDurationMs": "90000",
-    "temperature": "0.2",
     "rateLimitRetries": "2",
     "rateLimitBackoffMs": "1000",
     "x": 410,

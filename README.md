@@ -99,7 +99,7 @@ If `msg.ai` is missing, `ai-agent` uses the defaults configured in the node edit
 - `awsRegion` (optional): used for `bedrock` (default `us-east-1`)
 - `mcpServerIds` (optional): linked `ai-mcp-server-config` nodes
 - `debugLogs` (optional): verbose runtime logs
-- advanced limits (optional): `maxIterations`, `maxToolCalls`, `maxDurationMs`, `temperature`, `rateLimitRetries`, `rateLimitBackoffMs`
+- advanced limits (optional): `maxIterations`, `maxToolCalls`, `rateLimitRetries`, `rateLimitBackoffMs`
 
 ## Message contract
 
