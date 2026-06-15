@@ -18,6 +18,7 @@
         }
       },
       debugLogs: { value: false },
+      modelType: { value: "text" },
       maxIterations: { value: 8, required: true, validate: RED.validators.number() },
       maxToolCalls: { value: 12, required: true, validate: RED.validators.number() },
       rateLimitRetries: { value: 2, required: true, validate: RED.validators.number() },
@@ -47,6 +48,17 @@
 
       $("#node-input-provider").on("change", syncAwsRegionVisibility);
       syncAwsRegionVisibility();
+
+      function syncImageModeVisibility() {
+        const isImage = $("#node-input-modelType").val() === "image";
+        $("#node-input-mcpServerIds-list").closest(".form-row").toggle(!isImage);
+        $("#node-input-mcpServer-addnew").closest(".form-row").toggle(!isImage);
+        $("#node-input-maxIterations").closest(".form-row").toggle(!isImage);
+        $("#node-input-maxToolCalls").closest(".form-row").toggle(!isImage);
+      }
+
+      $("#node-input-modelType").on("change", syncImageModeVisibility);
+      syncImageModeVisibility();
 
       // Keep the draft field technical-only: needed for native config create/edit buttons.
       $("#node-input-mcpServerDraft").closest(".form-row").hide();
@@ -285,6 +297,14 @@
   <div class="form-row">
     <label for="node-input-model"><i class="fa fa-cube"></i> Model</label>
     <input type="text" id="node-input-model" placeholder="Optional override" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-modelType"><i class="fa fa-image"></i> Model type</label>
+    <select id="node-input-modelType" style="width:70%">
+      <option value="text">Text / Chat (reasoning loop)</option>
+      <option value="image">Image generation (direct invoke)</option>
+    </select>
   </div>
 
   <div class="form-row">

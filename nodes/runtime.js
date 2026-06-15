@@ -3,7 +3,7 @@ const {
   DEFAULT_MAX_ITERATIONS,
   DEFAULT_MAX_TOOL_CALLS
 } = require("./domain/agent-constants");
-const { executeReasoningLoop, extractJsonObject, extractText } = require("./domain/agent-loop");
+const { executeReasoningLoop, extractJsonObject, extractText, extractImageOutput } = require("./domain/agent-loop");
 const { isRateLimitError, sleep } = require("./domain/rate-limit");
 const { normalizeInput, parseMcpServers } = require("./adapters/nodered/input-mapper");
 
@@ -14,6 +14,7 @@ module.exports = {
   executeReasoningLoop,
   extractJsonObject,
   extractText,
+  extractImageOutput,
   isRateLimitError,
   normalizeInput,
   parseMcpServers,

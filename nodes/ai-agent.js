@@ -24,6 +24,7 @@ module.exports = function (RED) {
     node.rateLimitBackoffMs = Number(config.rateLimitBackoffMs || 1000);
     node.awsRegion = (config.awsRegion || "us-east-1").trim();
     node.debugLogs = config.debugLogs === true || config.debugLogs === "true";
+    node.modelType = (config.modelType || "text").trim();
 
     node.on("input", async function (msg, send, done) {
       send = send || function () {
@@ -52,6 +53,7 @@ module.exports = function (RED) {
         const modelName = String(msg?.ai?.model || node.model || "");
         const hasRuntimeSystemPrompt = !!(msg && msg.ai && Object.prototype.hasOwnProperty.call(msg.ai, "systemPrompt"));
         const systemPrompt = String(hasRuntimeSystemPrompt ? msg.ai.systemPrompt : node.systemPrompt || "");
+        const modelType = String(msg?.ai?.modelType || node.modelType || "text");
         const debugEnabled = msg?.ai?.debug === true || node.debugLogs;
         const debugLog = (...parts) => {
           if (!debugEnabled) return;
@@ -85,13 +87,14 @@ module.exports = function (RED) {
         const toolManifest = mcpManager.getToolManifest();
         debugLog("tools available", toolManifest.map((t) => t.name));
 
-        node.status({ fill: "blue", shape: "dot", text: "reasoning" });
+        node.status({ fill: "blue", shape: "dot", text: modelType === "image" ? "generating image" : "reasoning" });
 
         const result = await runAgentUseCase({
           model,
           mcpManager,
           input,
           systemPrompt,
+          modelType,
           maxIterations: node.maxIterations,
           maxToolCalls: node.maxToolCalls,
           rateLimitRetries: node.rateLimitRetries,

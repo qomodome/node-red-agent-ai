@@ -209,8 +209,73 @@ async function executeReasoningLoop(options) {
   throw new Error("Agent limit exceeded: maxIterations reached");
 }
 
+function extractImageOutput(response) {
+  if (!response) return { base64: null, mimeType: null, text: null, textOnly: false };
+
+  const parts = Array.isArray(response.content) ? response.content : [];
+
+  for (const part of parts) {
+    if (!part || typeof part !== "object") continue;
+
+    // OpenAI-style: {type:"image_url", image_url:{url:"data:image/TYPE;base64,DATA"}}
+    if (part.type === "image_url" && part.image_url && typeof part.image_url.url === "string") {
+      const url = part.image_url.url;
+      const match = url.match(/^data:(image\/[^;]+);base64,(.+)$/);
+      if (match) {
+        return { base64: match[2], mimeType: match[1], text: null, textOnly: false };
+      }
+      return { base64: url, mimeType: "image/png", text: null, textOnly: false };
+    }
+
+    // Anthropic/Bedrock-style: {type:"image", source:{type:"base64", media_type:"TYPE", data:"DATA"}}
+    if (
+      part.type === "image" &&
+      part.source &&
+      part.source.type === "base64" &&
+      typeof part.source.data === "string"
+    ) {
+      return {
+        base64: part.source.data,
+        mimeType: part.source.media_type || "image/png",
+        text: null,
+        textOnly: false
+      };
+    }
+
+    // LangChain Gemini media-part style: {type:"media", mimeType:"image/TYPE", data:"BASE64"}
+    if (part.type === "media" && typeof part.data === "string" && part.data.length > 0) {
+      return {
+        base64: part.data,
+        mimeType: (typeof part.mimeType === "string" && part.mimeType) || "image/png",
+        text: null,
+        textOnly: false
+      };
+    }
+
+    // Raw Gemini API inline-data style: {inlineData:{mimeType:"TYPE", data:"BASE64"}}
+    if (part.inlineData && typeof part.inlineData.data === "string" && part.inlineData.data.length > 0) {
+      return {
+        base64: part.inlineData.data,
+        mimeType: (typeof part.inlineData.mimeType === "string" && part.inlineData.mimeType) || "image/png",
+        text: null,
+        textOnly: false
+      };
+    }
+  }
+
+  // Fallback: model returned text instead of image
+  const text = extractText(response);
+  return {
+    base64: null,
+    mimeType: null,
+    text: text || null,
+    textOnly: true
+  };
+}
+
 module.exports = {
   executeReasoningLoop,
   extractJsonObject,
-  extractText
+  extractText,
+  extractImageOutput
 };
