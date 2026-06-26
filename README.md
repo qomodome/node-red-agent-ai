@@ -6,7 +6,7 @@ Drop an AI agent into any Node-RED flow — it runs a reasoning loop, calls MCP 
 
 - `ai-agent-config`: stores provider credentials and shared defaults
 - `ai-agent`: executes a reasoning loop, can call MCP tools, then returns final output
-- Provider support: **OpenAI GPT**, **Google Gemini**, **AWS Bedrock**
+- Provider support: **OpenAI GPT**, **Google Gemini**, **AWS Bedrock**, **z.ai (GLM)**, **Azure OpenAI**, **Azure AI Inference**
 
 ## Architecture
 
@@ -61,7 +61,7 @@ msg.payload = {
 };
 
 msg.ai = {
-  provider: "gemini", // openai | gemini | bedrock
+  provider: "gemini", // openai | gemini | bedrock | zai | azure | azure-ai
   model: "gemini-3.5-flash"
 };
 
@@ -80,6 +80,9 @@ If `msg.ai` is missing, `ai-agent` uses the defaults configured in the node edit
 - `awsAccessKeyId` (optional): AWS key id for `bedrock`
 - `awsSecretAccessKey` (optional): AWS secret for `bedrock`
 - `awsSessionToken` (optional): AWS session token when needed
+- `zaiApiKey` (optional): used when provider is `zai`
+- `azureOpenAIApiKey` (optional): used when provider is `azure`
+- `azureAiApiKey` (optional): used when provider is `azure-ai`
 
 ### ai-mcp-server-config
 
@@ -93,10 +96,16 @@ If `msg.ai` is missing, `ai-agent` uses the defaults configured in the node edit
 ### ai-agent
 
 - `agent` (required): reference to `ai-agent-config`
-- `provider` (required): `openai` | `gemini` | `bedrock`
-- `model` (optional): provider model override
+- `provider` (required): `openai` | `gemini` | `bedrock` | `zai` | `azure` | `azure-ai`
+- `model` (optional): provider model override (z.ai defaults to `glm-5.2`)
 - `systemPrompt` (optional): persistent agent instruction
 - `awsRegion` (optional): used for `bedrock` (default `us-east-1`)
+- `zaiBaseUrl` (optional): z.ai base URL (default `https://api.z.ai/api/paas/v4`)
+- `azureEndpoint` (required for `azure`): e.g. `https://<resource>.openai.azure.com`
+- `azureDeployment` (required for `azure`): Azure OpenAI deployment name
+- `azureApiVersion` (optional for `azure`): default `2024-10-21`
+- `azureAiEndpoint` (required for `azure-ai`): e.g. `https://<resource>.services.ai.azure.com/models`
+- `azureAiApiVersion` (optional for `azure-ai`): API version query param
 - `mcpServerIds` (optional): linked `ai-mcp-server-config` nodes
 - `debugLogs` (optional): verbose runtime logs
 - advanced limits (optional): `maxIterations`, `maxToolCalls`, `rateLimitRetries`, `rateLimitBackoffMs`
@@ -107,7 +116,7 @@ Input:
 
 - `msg.payload` string or object with `input`
 - optional overrides in `msg.ai`:
-  - `provider`: `openai` · `gemini` · `bedrock`
+  - `provider`: `openai` · `gemini` · `bedrock` · `zai` · `azure` · `azure-ai`
   - `model`: model id/name
   - `mcpServers`: array of MCP server configs
 

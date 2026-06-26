@@ -23,6 +23,12 @@ module.exports = function (RED) {
     node.rateLimitRetries = Number(config.rateLimitRetries || 2);
     node.rateLimitBackoffMs = Number(config.rateLimitBackoffMs || 1000);
     node.awsRegion = (config.awsRegion || "us-east-1").trim();
+    node.zaiBaseUrl = (config.zaiBaseUrl || "").trim();
+    node.azureEndpoint = (config.azureEndpoint || "").trim();
+    node.azureDeployment = (config.azureDeployment || "").trim();
+    node.azureApiVersion = (config.azureApiVersion || "").trim();
+    node.azureAiEndpoint = (config.azureAiEndpoint || "").trim();
+    node.azureAiApiVersion = (config.azureAiApiVersion || "").trim();
     node.debugLogs = config.debugLogs === true || config.debugLogs === "true";
     node.modelType = (config.modelType || "text").trim();
 
@@ -74,12 +80,22 @@ module.exports = function (RED) {
 
         node.status({ fill: "blue", shape: "dot", text: "initializing" });
 
-        const model = await createLangChainModel(
+        const model = await createLangChainModel({
           provider,
           modelName,
           secrets,
-          node.awsRegion
-        );
+          region: node.awsRegion,
+          zai: {
+            baseUrl: node.zaiBaseUrl
+          },
+          azure: {
+            endpoint: node.azureEndpoint,
+            deployment: node.azureDeployment,
+            apiVersion: node.azureApiVersion,
+            aiEndpoint: node.azureAiEndpoint,
+            aiApiVersion: node.azureAiApiVersion
+          }
+        });
 
         mcpManager = new McpClientManager(mcpServers);
         await mcpManager.connect();

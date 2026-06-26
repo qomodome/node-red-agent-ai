@@ -12,7 +12,11 @@ module.exports = function (RED) {
         awsAccessKeyId: typeof creds.awsAccessKeyId === "string" ? creds.awsAccessKeyId.trim() : "",
         awsSecretAccessKey:
           typeof creds.awsSecretAccessKey === "string" ? creds.awsSecretAccessKey.trim() : "",
-        awsSessionToken: typeof creds.awsSessionToken === "string" ? creds.awsSessionToken.trim() : ""
+        awsSessionToken: typeof creds.awsSessionToken === "string" ? creds.awsSessionToken.trim() : "",
+        zaiApiKey: typeof creds.zaiApiKey === "string" ? creds.zaiApiKey.trim() : "",
+        azureOpenAIApiKey:
+          typeof creds.azureOpenAIApiKey === "string" ? creds.azureOpenAIApiKey.trim() : "",
+        azureAiApiKey: typeof creds.azureAiApiKey === "string" ? creds.azureAiApiKey.trim() : ""
       };
     };
   }
@@ -23,7 +27,10 @@ module.exports = function (RED) {
       googleApiKey: { type: "password" },
       awsAccessKeyId: { type: "text" },
       awsSecretAccessKey: { type: "password" },
-      awsSessionToken: { type: "password" }
+      awsSessionToken: { type: "password" },
+      zaiApiKey: { type: "password" },
+      azureOpenAIApiKey: { type: "password" },
+      azureAiApiKey: { type: "password" }
     }
   });
 };

@@ -9,6 +9,12 @@
       model: { value: "" },
       systemPrompt: { value: "" },
       awsRegion: { value: "us-east-1" },
+      zaiBaseUrl: { value: "" },
+      azureEndpoint: { value: "" },
+      azureDeployment: { value: "" },
+      azureApiVersion: { value: "" },
+      azureAiEndpoint: { value: "" },
+      azureAiApiVersion: { value: "" },
       mcpServerIds: { value: [] },
       mcpServerDraft: {
         value: "",
@@ -40,14 +46,23 @@
 
       uiLog("oneditprepare", { id: node.id, mcpServerIds: node.mcpServerIds || [] });
 
-      function syncAwsRegionVisibility() {
+      function syncProviderFieldsVisibility() {
         const provider = String($("#node-input-provider").val() || "").toLowerCase();
-        const isBedrock = provider === "bedrock";
-        $("#node-input-awsRegion").closest(".form-row").toggle(isBedrock);
+        const toggle = function (id, visible) {
+          $("#node-input-" + id).closest(".form-row").toggle(!!visible);
+        };
+
+        toggle("awsRegion", provider === "bedrock");
+        toggle("zaiBaseUrl", provider === "zai");
+        toggle("azureEndpoint", provider === "azure");
+        toggle("azureDeployment", provider === "azure");
+        toggle("azureApiVersion", provider === "azure");
+        toggle("azureAiEndpoint", provider === "azure-ai");
+        toggle("azureAiApiVersion", provider === "azure-ai");
       }
 
-      $("#node-input-provider").on("change", syncAwsRegionVisibility);
-      syncAwsRegionVisibility();
+      $("#node-input-provider").on("change", syncProviderFieldsVisibility);
+      syncProviderFieldsVisibility();
 
       function syncImageModeVisibility() {
         const isImage = $("#node-input-modelType").val() === "image";
@@ -291,6 +306,9 @@
       <option value="openai">OpenAI GPT</option>
       <option value="gemini">Google Gemini</option>
       <option value="bedrock">AWS Bedrock</option>
+      <option value="zai">z.ai (GLM)</option>
+      <option value="azure">Azure OpenAI</option>
+      <option value="azure-ai">Azure AI Inference</option>
     </select>
   </div>
 
@@ -315,6 +333,36 @@
   <div class="form-row">
     <label for="node-input-awsRegion"><i class="fa fa-globe"></i> AWS Region</label>
     <input type="text" id="node-input-awsRegion" placeholder="us-east-1" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-zaiBaseUrl"><i class="fa fa-link"></i> z.ai Base URL</label>
+    <input type="text" id="node-input-zaiBaseUrl" placeholder="https://api.z.ai/api/paas/v4" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-azureEndpoint"><i class="fa fa-globe"></i> Azure Endpoint</label>
+    <input type="text" id="node-input-azureEndpoint" placeholder="https://<resource>.openai.azure.com" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-azureDeployment"><i class="fa fa-cube"></i> Azure Deployment</label>
+    <input type="text" id="node-input-azureDeployment" placeholder="my-gpt-deployment" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-azureApiVersion"><i class="fa fa-code-fork"></i> Azure API Version</label>
+    <input type="text" id="node-input-azureApiVersion" placeholder="2024-10-21" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-azureAiEndpoint"><i class="fa fa-globe"></i> Azure AI Endpoint</label>
+    <input type="text" id="node-input-azureAiEndpoint" placeholder="https://<resource>.services.ai.azure.com/models" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-azureAiApiVersion"><i class="fa fa-code-fork"></i> Azure AI API Version</label>
+    <input type="text" id="node-input-azureAiApiVersion" placeholder="Optional (e.g. 2024-05-01-preview)" />
   </div>
 
   <div class="form-row">
@@ -377,7 +425,7 @@
   <h3>What This Node Does</h3>
   <ul>
     <li>Understands natural-language requests from your flow</li>
-    <li>Uses your selected model provider (OpenAI, Gemini, or Bedrock)</li>
+    <li>Uses your selected model provider (OpenAI, Gemini, Bedrock, z.ai, Azure OpenAI, or Azure AI)</li>
     <li>Can use MCP tools when needed to fetch live data or perform actions</li>
     <li>Combines tool results into a final response for your flow</li>
   </ul>
@@ -417,7 +465,7 @@ msg.payload = { input: "User request" }</pre>
     <code>msg.ai</code>.
   </p>
   <pre>msg.ai = {
-  provider: "openai|gemini|bedrock",
+  provider: "openai|gemini|bedrock|zai|azure|azure-ai",
   model: "model-id",
   systemPrompt: "custom system instructions",
   mcpServers: [
