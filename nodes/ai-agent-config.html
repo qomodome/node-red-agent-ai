@@ -9,7 +9,10 @@
       googleApiKey: { type: "password" },
       awsAccessKeyId: { type: "text" },
       awsSecretAccessKey: { type: "password" },
-      awsSessionToken: { type: "password" }
+      awsSessionToken: { type: "password" },
+      zaiApiKey: { type: "password" },
+      azureOpenAIApiKey: { type: "password" },
+      azureAiApiKey: { type: "password" }
     },
     label: function () {
       return this.name || "ai-agent-config";
@@ -47,8 +50,23 @@
     <label for="node-config-input-awsSessionToken"><i class="fa fa-key"></i> AWS Session Token</label>
     <input type="password" id="node-config-input-awsSessionToken" />
   </div>
+
+  <div class="form-row">
+    <label for="node-config-input-zaiApiKey"><i class="fa fa-key"></i> z.ai API Key</label>
+    <input type="password" id="node-config-input-zaiApiKey" placeholder="z.ai (GLM) API key" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-azureOpenAIApiKey"><i class="fa fa-key"></i> Azure OpenAI Key</label>
+    <input type="password" id="node-config-input-azureOpenAIApiKey" placeholder="Azure OpenAI Service key" />
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-azureAiApiKey"><i class="fa fa-key"></i> Azure AI Key</label>
+    <input type="password" id="node-config-input-azureAiApiKey" placeholder="Azure AI Inference / Foundry key" />
+  </div>
 </script>
 
 <script type="text/html" data-help-name="ai-agent-config">
-  <p>Reusable credentials for OpenAI, Gemini and Bedrock providers.</p>
+  <p>Reusable credentials for OpenAI, Gemini, Bedrock, z.ai, Azure OpenAI and Azure AI providers.</p>
 </script>

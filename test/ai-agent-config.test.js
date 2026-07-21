@@ -31,7 +31,10 @@ test("registers ai-agent-config with credentials", () => {
       googleApiKey: { type: "password" },
       awsAccessKeyId: { type: "text" },
       awsSecretAccessKey: { type: "password" },
-      awsSessionToken: { type: "password" }
+      awsSessionToken: { type: "password" },
+      zaiApiKey: { type: "password" },
+      azureOpenAIApiKey: { type: "password" },
+      azureAiApiKey: { type: "password" }
     }
   });
 });
@@ -48,7 +51,10 @@ test("getProviderSecrets trims values", () => {
     googleApiKey: " g-key ",
     awsAccessKeyId: " AKIA123 ",
     awsSecretAccessKey: " secret ",
-    awsSessionToken: " token "
+    awsSessionToken: " token ",
+    zaiApiKey: " zai-key ",
+    azureOpenAIApiKey: " azure-openai-key ",
+    azureAiApiKey: " azure-ai-key "
   };
 
   assert.deepEqual(node.getProviderSecrets(), {
@@ -56,6 +62,9 @@ test("getProviderSecrets trims values", () => {
     googleApiKey: "g-key",
     awsAccessKeyId: "AKIA123",
     awsSecretAccessKey: "secret",
-    awsSessionToken: "token"
+    awsSessionToken: "token",
+    zaiApiKey: "zai-key",
+    azureOpenAIApiKey: "azure-openai-key",
+    azureAiApiKey: "azure-ai-key"
   });
 });
