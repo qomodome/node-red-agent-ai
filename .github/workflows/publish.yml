@@ -47,7 +47,8 @@ jobs:
             echo "Tag commit ${GITHUB_SHA} is not on main branch."
             exit 1
           fi
-
+      - name: Install dependencies
+        run: npm ci
       - name: Run tests
         run: npm test
 
